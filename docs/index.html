@@ -1,13 +1,287 @@
 <!doctype html>
-<html lang="en-IN">
-    <head>
-        <meta charset="UTF-8"/>
-        <meta name="viewport" content=""width=device-width, initial-scale="1.0"/>
-        <title>Gokul's First Webpage</title> 
-    </head>
-    <body>
-        <h1>Hello,World!</h1>
-        <p>This is my first web page.</p>
-        <button>click me</button>
-    </body>
+<html ng-app="safetyApp">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Woman Safety — Demo App (HTML / CSS / JS / AngularJS)</title>
+  <style>
+    :root{--accent:#d6336c;--bg:#0f172a;--card:#0b1220;color-scheme: dark}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{background:linear-gradient(180deg,#071233 0%, #07162a 100%);color:#e6eef8;display:flex;align-items:center;justify-content:center;padding:24px}
+    .app{width:100%;max-width:980px}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+    header h1{font-size:20px;margin:0}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:18px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6);}
+    .big-button{display:flex;align-items:center;justify-content:center;font-weight:700;border-radius:14px;padding:18px 12px;font-size:20px;cursor:pointer;border:none}
+    .sos{background:linear-gradient(180deg,var(--accent),#b21f54);color:white}
+    .silent{background:linear-gradient(180deg,#334155,#222831);color:#d1d5db}
+    .controls{display:flex;gap:8px;margin-top:12px}
+    label{display:block;font-size:13px;margin-bottom:6px;color:#c7d2fe}
+    input,select,textarea{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    .contact-list{max-height:200px;overflow:auto;margin-top:8px}
+    .contact{display:flex;justify-content:space-between;gap:8px;padding:8px;border-radius:8px;margin-bottom:6px;background:rgba(255,255,255,0.02)}
+    .small{font-size:13px;color:#94a3b8}
+    .muted{color:#94a3b8}
+    footer{margin-top:12px;font-size:13px;color:#9aa8c7}
+    .map{height:240px;border-radius:10px;margin-top:8px;overflow:hidden}
+    .actions-row{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:13px}
+    .danger{color:#ffb3c8}
+    @media (max-width:880px){.grid{grid-template-columns:1fr;}.map{height:180px}}
+  </style>
+</head>
+<body ng-controller="MainCtrl as vm">
+  <div class="app">
+    <header>
+      <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 24 24' fill='none'><path d='M12 2l2.5 5.5L20 10l-5 3 1.2 6.5L12 16l-4.2 3.5L9 13 4 10l5.5-2.5L12 2z' fill='%23d6336c'/></svg>" alt="logo" style="height:44px;width:44px;border-radius:10px;background:linear-gradient(90deg,#1f2937,#0b1220);padding:6px;"/>
+      <div>
+        <h1>Woman Safety — Demo</h1>
+        <div class="small">Quick SOS + location sharing (browser demo). No backend required to test core features.</div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:12px;justify-content:space-between">
+          <div>
+            <div class="small">Emergency</div>
+            <div style="font-size:18px;font-weight:700">SOS & Location</div>
+          </div>
+          <div style="text-align:right">
+            <div class="small">Last known status</div>
+            <div class="muted">{{vm.status}}</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
+          <button class="big-button sos" ng-click="vm.triggerSOS()">🔴 EMERGENCY SOS</button>
+          <button class="big-button silent" ng-click="vm.toggleAlarm()">🔔 {{vm.alarmOn ? 'Stop Alarm' : 'Alarm'}}</button>
+        </div>
+
+        <div class="controls">
+          <button class="chip" ng-click="vm.getLocation()">📍 Get Location</button>
+          <button class="chip" ng-click="vm.copyLocation()">📋 Copy Link</button>
+          <button class="chip" ng-click="vm.openMaps()">🗺 Open in Maps</button>
+        </div>
+
+        <div class="map" ng-if="vm.coords">
+          <!-- Use an OpenStreetMap iframe so no API key required. -->
+          <iframe width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"
+            ng-src="{{vm.osmEmbedUrl}}"></iframe>
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="small">What SOS does (demo):</div>
+          <ul class="small">
+            <li>Plays audible alarm (browser sound).</li>
+            <li>Collects geolocation (asks permission).</li>
+            <li>Prepares SMS / email templates and opens user's SMS/mail app (cannot auto-send from browser).</li>
+            <li>Saves an incident record locally (localStorage) and optionally calls a placeholder API endpoint.</li>
+          </ul>
+        </div>
+
+        <footer>
+          <div>Note: For testing on desktop, browsers may not allow automatic SMS sending — mobile works best for sms: links. Always test on a secure origin (https) to use geolocation in modern browsers.</div>
+        </footer>
+      </div>
+
+      <div class="card">
+        <div>
+          <label>Trusted Contacts</label>
+          <form ng-submit="vm.addContact()">
+            <input type="text" ng-model="vm.newContact.name" placeholder="Name" required />
+            <input type="tel" ng-model="vm.newContact.phone" placeholder="Phone (with country code e.g. +91xxxx)" required style="margin-top:8px" />
+            <input type="email" ng-model="vm.newContact.email" placeholder="Email (optional)" style="margin-top:8px" />
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button class="chip" type="submit">➕ Add contact</button>
+              <button class="chip" type="button" ng-click="vm.clearContacts()">🧹 Clear all</button>
+            </div>
+          </form>
+
+          <div class="contact-list">
+            <div class="contact" ng-repeat="c in vm.contacts track by $index">
+              <div>
+                <div style="font-weight:700">{{c.name}}</div>
+                <div class="small">{{c.phone}} <span ng-if="c.email">• {{c.email}}</span></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <button class="chip" ng-click="vm.testSms(c)">SMS</button>
+                <button class="chip" ng-click="vm.testEmail(c)">Email</button>
+              </div>
+            </div>
+            <div ng-if="!vm.contacts.length" class="small muted">No contacts yet — add trusted people above.</div>
+          </div>
+
+          <hr style="margin:12px 0;border-color:rgba(255,255,255,0.03)" />
+
+          <label>Incident Log (local)</label>
+          <div class="small" style="margin-top:6px">Saved incidents: {{vm.logs.length}}</div>
+          <div style="max-height:120px;overflow:auto;margin-top:8px">
+            <div ng-repeat="l in vm.logs | orderBy:'-time'" style="padding:8px;border-radius:8px;margin-bottom:6px;background:rgba(255,255,255,0.01)">
+              <div style="display:flex;justify-content:space-between">
+                <div style="font-weight:700">{{l.type}}</div>
+                <div class="small muted">{{l.time | date:'medium'}}</div>
+              </div>
+              <div class="small">{{l.note}}</div>
+            </div>
+            <div ng-if="!vm.logs.length" class="small muted">No incidents recorded.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- AngularJS 1.x from CDN (unpkg) -->
+  <script src="https://unpkg.com/angular@1.8.3/angular.min.js"></script>
+  <script>
+    (function(){
+      var app = angular.module('safetyApp', []);
+
+      app.controller('MainCtrl', ['$window','$timeout','$sce','$http',function($window,$timeout,$sce,$http){
+        var vm = this;
+
+        vm.contacts = JSON.parse(localStorage.getItem('safety:contacts')||'[]');
+        vm.logs = JSON.parse(localStorage.getItem('safety:logs')||'[]');
+        vm.newContact = {};
+        vm.alarmOn = false;
+        vm.status = 'Ready';
+        vm.coords = null;
+        vm.osmEmbedUrl = '';
+
+        function saveContacts(){ localStorage.setItem('safety:contacts', JSON.stringify(vm.contacts)); }
+        function saveLogs(){ localStorage.setItem('safety:logs', JSON.stringify(vm.logs)); }
+
+        vm.addContact = function(){
+          vm.contacts.push(angular.copy(vm.newContact));
+          vm.newContact = {};
+          saveContacts();
+        };
+
+        vm.clearContacts = function(){ if(confirm('Clear ALL saved contacts?')){ vm.contacts=[]; saveContacts(); } };
+
+        vm.testSms = function(c){
+          var body = encodeURIComponent('I am testing — if this is an emergency please respond.');
+          // sms: URL differs between platforms. For demo use the universal sms: scheme
+          $window.location.href = 'sms:'+c.phone+'?body='+body;
+        };
+
+        vm.testEmail = function(c){
+          var subject = encodeURIComponent('Safety test');
+          var body = encodeURIComponent('This is a safety app test.\n\n— Sent from Woman Safety Demo');
+          $window.location.href = 'mailto:'+c.email+'?subject='+subject+'&body='+body;
+        };
+
+        vm.getLocation = function(){
+          if(!navigator.geolocation){ alert('Geolocation not available in this browser'); return; }
+          vm.status = 'Requesting location…';
+          navigator.geolocation.getCurrentPosition(function(pos){
+            $timeout(function(){
+              vm.coords = {lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy};
+              vm.osmEmbedUrl = $sce.trustAsResourceUrl('https://www.openstreetmap.org/export/embed.html?bbox='+
+                (vm.coords.lon-0.01)+'%2C'+(vm.coords.lat-0.01)+'%2C'+(vm.coords.lon+0.01)+'%2C'+(vm.coords.lat+0.01)+'&layer=mapnik&marker='+vm.coords.lat+'%2C'+vm.coords.lon);
+              vm.status = 'Location acquired';
+            });
+          }, function(err){
+            $timeout(function(){ vm.status = 'Location denied or unavailable'; alert('Unable to get location: '+err.message); });
+          }, {enableHighAccuracy:true,timeout:10000});
+        };
+
+        vm.copyLocation = function(){
+          if(!vm.coords){ alert('No location available. Click Get Location first.'); return; }
+          var url = 'https://www.google.com/maps/search/?api=1&query='+vm.coords.lat+','+vm.coords.lon;
+          navigator.clipboard.writeText(url).then(function(){ alert('Location link copied to clipboard'); }, function(){ alert('Copy failed — try manual copy: '+url); });
+        };
+
+        vm.openMaps = function(){
+          if(!vm.coords){ alert('No location available. Click Get Location first.'); return; }
+          var url = 'https://www.google.com/maps/search/?api=1&query='+vm.coords.lat+','+vm.coords.lon;
+          $window.open(url,'_blank');
+        };
+
+        // Simple WebAudio beep alarm
+        var audioCtx = null; var oscillator = null;
+        vm.toggleAlarm = function(){
+          if(vm.alarmOn){ stopAlarm(); vm.alarmOn=false; vm.status='Alarm stopped'; }
+          else { startAlarm(); vm.alarmOn=true; vm.status='Alarm sounding'; }
+        };
+        function startAlarm(){
+          try{
+            audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+            oscillator = audioCtx.createOscillator();
+            var gain = audioCtx.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+            oscillator.connect(gain);
+            gain.connect(audioCtx.destination);
+            oscillator.start();
+            // vibrate if supported
+            if(navigator.vibrate) navigator.vibrate([500,200,500]);
+          }catch(e){ console.warn('Audio play failed',e); }
+        }
+        function stopAlarm(){ try{ if(oscillator) oscillator.stop(); if(audioCtx) audioCtx.close(); oscillator=null; audioCtx=null; if(navigator.vibrate) navigator.vibrate(0);}catch(e){} }
+
+        // Core SOS action
+        vm.triggerSOS = function(){
+          vm.status = 'SOS triggered';
+          vm.toggleAlarm(); // sound the alarm
+
+          // Try to acquire fresh location (async)
+          if(navigator.geolocation){
+            navigator.geolocation.getCurrentPosition(function(pos){
+              $timeout(function(){
+                vm.coords = {lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy};
+                vm.osmEmbedUrl = $sce.trustAsResourceUrl('https://www.openstreetmap.org/export/embed.html?bbox='+
+                  (vm.coords.lon-0.01)+'%2C'+(vm.coords.lat-0.01)+'%2C'+(vm.coords.lon+0.01)+'%2C'+(vm.coords.lat+0.01)+
+                  '&layer=mapnik&marker='+vm.coords.lat+'%2C'+vm.coords.lon);
+
+                var locationLink = 'https://www.google.com/maps/search/?api=1&query='+vm.coords.lat+','+vm.coords.lon;
+
+                // Prepare messages to contacts
+                var message = 'EMERGENCY — I need help. My location: '+locationLink;
+
+                // Open SMS/Mail for each contact (can't auto-send)
+                vm.contacts.forEach(function(c){
+                  if(c.phone){
+                    // Slight delay so multiple sms: invocations don't clobber on some platforms
+                    $timeout(function(){ $window.open('sms:'+c.phone+'?body='+encodeURIComponent(message),'_self'); }, 200);
+                  }
+                  if(c.email){
+                    $timeout(function(){ $window.open('mailto:'+c.email+'?subject='+encodeURIComponent('EMERGENCY')+'&body='+encodeURIComponent(message),'_self'); }, 300);
+                  }
+                });
+
+                // Log locally
+                vm.logs.push({type:'SOS', time: Date.now(), note: 'SOS sent to '+(vm.contacts.length||'0')+' contacts', coords: vm.coords});
+                saveLogs();
+
+                // Optional: call a placeholder backend API (demo only)
+                // Replace with your API URL if you have one. This call is non-blocking and will likely 404.
+                try{ $http.post('/api/incident',{coords:vm.coords, contacts:vm.contacts, note:'SOS triggered'}).catch(function(){/* ignore */}); }catch(e){}
+
+                vm.status = 'SOS processed — contacts notified (opened SMS/email apps)';
+              });
+            }, function(err){
+              $timeout(function(){ vm.status='SOS: location failed'; alert('Could not get location: '+err.message); vm.logs.push({type:'SOS',time:Date.now(),note:'SOS w/o location'}); saveLogs(); });
+            }, {enableHighAccuracy:true, timeout:8000});
+          }else{
+            alert('Geolocation not available — SOS will still sound alarm.');
+          }
+
+        };
+
+        vm.copyToClipboard = function(text){ navigator.clipboard.writeText(text); };
+
+        // store/reload
+        vm.saveState = function(){ saveContacts(); saveLogs(); };
+
+        // expose for debugging
+        window._safetyVm = vm;
+
+      }]);
+    })();
+  </script>
+</body>
 </html>
